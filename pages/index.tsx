@@ -1,55 +1,103 @@
-import type { NextPage } from "next";
+import type { NextPage } from 'next'
+import type { InferGetStaticPropsType } from 'next'
+import useSWR, { SWRConfig } from 'swr'
+import Layout from '../components/Layout'
+import {
+  Box,
+  Container,
+  Text,
+  Divider,
+  Grid,
+  GridItem,
+  HStack,
+  Image,
+} from '@chakra-ui/react'
+import { fetcher, qiitaApiUrl, QiitaArticles } from '../lib/api'
+import dayjs from 'dayjs'
 
-import styles from "../styles/Home.module.css";
-import Layout from "../components/Layout";
+export const getStaticProps = async () => {
+  const articles = await fetcher(qiitaApiUrl)
 
-const Index: NextPage = () => {
+  return {
+    props: {
+      fallback: {
+        'https://qiita.com/api/v2/authenticated_user/items': articles,
+      },
+    },
+  }
+}
+
+const Index: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
+  fallback,
+}) => {
+  const { data: articles, error } = useSWR<QiitaArticles>(qiitaApiUrl, fetcher)
+
   return (
     <Layout>
-      <div className={styles.container}>
-        <main className={styles.main}>
-          <h1 className={styles.title}>
-            Welcome to <a href="https://nextjs.org">Next.js!</a>
-          </h1>
-
-          <p className={styles.description}>
-            Get started by editing{" "}
-            <code className={styles.code}>pages/index.tsx</code>
-          </p>
-
-          <div className={styles.grid}>
-            <a href="https://nextjs.org/docs" className={styles.card}>
-              <h2>Documentation &rarr;</h2>
-              <p>Find in-depth information about Next.js features and API.</p>
-            </a>
-
-            <a href="https://nextjs.org/learn" className={styles.card}>
-              <h2>Learn &rarr;</h2>
-              <p>Learn about Next.js in an interactive course with quizzes!</p>
-            </a>
-
-            <a
-              href="https://github.com/vercel/next.js/tree/canary/examples"
-              className={styles.card}
-            >
-              <h2>Examples &rarr;</h2>
-              <p>Discover and deploy boilerplate example Next.js projects.</p>
-            </a>
-
-            <a
-              href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              className={styles.card}
-            >
-              <h2>Deploy &rarr;</h2>
-              <p>
-                Instantly deploy your Next.js site to a public URL with Vercel.
-              </p>
-            </a>
-          </div>
-        </main>
-      </div>
+      <Container marginY={'10'} maxW="container.md">
+        <Box textAlign={'center'}>
+          <Image
+            src="/IMG_0335.JPG"
+            borderRadius="full"
+            boxSize="200px"
+            marginX={'auto'}
+          />
+          <Text marginY={'4'} fontSize={'2xl'} fontWeight={'bold'}>
+            岡　秀信
+          </Text>
+          <Text>福岡在住のエンジニアです</Text>
+        </Box>
+        <Divider borderColor={'gray.400'} marginY={'16'} />
+        <SWRConfig value={{ fallback }}>
+          {error ? (
+            <Box>failed to load</Box>
+          ) : !articles ? (
+            <Box textAlign={'center'}>loading...</Box>
+          ) : (
+            <Grid templateColumns="repeat(2, 2fr)" gap={8}>
+              {articles.map(b => (
+                <GridItem key={b.id} bgColor={'card'} padding={'20px 26px'}>
+                  <Box as={'article'}>
+                    <Box as={'a'} href={b.url}>
+                      <HStack spacing="16px">
+                        <Box
+                          as={'div'}
+                          bgColor={'gray.400'}
+                          height={'50px'}
+                          width={'50px'}
+                          borderRadius={'full'}
+                        />
+                        <Box>
+                          <Box as={'div'} fontSize="sm" textAlign={'left'}>
+                            {b.user.id}
+                          </Box>
+                          <Box as={'div'} fontSize="sm">
+                            {dayjs(b.updated_at).format('YYYY-MM-DD')}
+                          </Box>
+                        </Box>
+                      </HStack>
+                      <Box
+                        as={'div'}
+                        fontSize="xl"
+                        marginY={'24px'}
+                        fontWeight={'extrabold'}
+                        textColor={'text'}
+                      >
+                        {b.title}
+                      </Box>
+                      <Box as={'div'} fontSize="sm">
+                        {b.url.includes('qiita.com') ? 'qiita' : null}
+                      </Box>
+                    </Box>
+                  </Box>
+                </GridItem>
+              ))}
+            </Grid>
+          )}
+        </SWRConfig>
+      </Container>
     </Layout>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index
