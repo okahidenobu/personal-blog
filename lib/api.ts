@@ -12,6 +12,7 @@ export const fetcher: Fetcher<any, string> = url =>
   fetch(url, args).then(res => res.json())
 
 export const qiitaApiUrl = 'https://qiita.com/api/v2/authenticated_user/items'
+// export const githubApi = 'https://api.github.com/issues'
 
 export type QiitaArticles = {
   rendered_body: HTMLElement

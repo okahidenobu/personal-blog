@@ -12,6 +12,7 @@ import {
   HStack,
   Image,
 } from '@chakra-ui/react'
+// import { fetcher, githubApi, qiitaApiUrl, QiitaArticles } from '../lib/api'
 import { fetcher, qiitaApiUrl, QiitaArticles } from '../lib/api'
 import dayjs from 'dayjs'
 
@@ -31,6 +32,9 @@ const Index: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
   fallback,
 }) => {
   const { data: articles, error } = useSWR<QiitaArticles>(qiitaApiUrl, fetcher)
+  const filteredArray = articles?.filter(a => !a.private)
+
+  // const { data: issues } = useSWR<any>(githubApi, fetcher)
 
   return (
     <Layout>
@@ -41,6 +45,7 @@ const Index: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
             borderRadius="full"
             boxSize="200px"
             marginX={'auto'}
+            alt="海の写真"
           />
           <Text marginY={'4'} fontSize={'2xl'} fontWeight={'bold'}>
             岡　秀信
@@ -55,7 +60,7 @@ const Index: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
             <Box textAlign={'center'}>loading...</Box>
           ) : (
             <Grid templateColumns="repeat(2, 2fr)" gap={8}>
-              {articles.map(b => (
+              {filteredArray?.map(b => (
                 <GridItem key={b.id} bgColor={'card'} padding={'20px 26px'}>
                   <Box as={'article'}>
                     <Box as={'a'} href={b.url}>
